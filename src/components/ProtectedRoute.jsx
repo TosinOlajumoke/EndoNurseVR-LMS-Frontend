@@ -6,15 +6,16 @@ export default function ProtectedRoute({ children, roles }) {
   const { user, token, loading } = useAuth();
   const location = useLocation();
 
-  // Wait while AuthContext is loading user data
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>; // Optional spinner
 
-  // Not logged in → redirect to login page
-  if (!token) return <Navigate to="/login" replace state={{ from: location }} />;
+  if (!token) {
+    // Save current location to redirect after login
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
 
-  // Role not allowed → redirect to unauthorized
-  if (roles && !roles.includes(user?.role)) return <Navigate to="/unauthorized" replace />;
+  if (roles && (!user || !roles.includes(user.role))) {
+    return <Navigate to="/unauthorized" replace />;
+  }
 
-  // User is authenticated → render children
   return <>{children}</>;
 }
