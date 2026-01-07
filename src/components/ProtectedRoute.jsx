@@ -1,27 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children, roles }) {
-  const { user: contextUser, token } = useAuth();
-  const [user, setUser] = useState(contextUser);
-  const [loading, setLoading] = useState(true);
+  const { user, token, loading } = useAuth();
+  const location = useLocation();
 
-  useEffect(() => {
-    // On mount, check if user info exists in localStorage
-    if (!user) {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    }
-    setLoading(false);
-  }, [user]);
-
+  // Wait while AuthContext is loading user data
   if (loading) return <div>Loading...</div>;
 
-  if (!token || !user) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/unauthorized" replace />;
+  // Not logged in → redirect to login page
+  if (!token) return <Navigate to="/login" replace state={{ from: location }} />;
 
+  // Role not allowed → redirect to unauthorized
+  if (roles && !roles.includes(user?.role)) return <Navigate to="/unauthorized" replace />;
+
+  // User is authenticated → render children
   return <>{children}</>;
 }
