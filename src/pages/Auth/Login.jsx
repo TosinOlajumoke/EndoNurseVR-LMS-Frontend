@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import NavbarCommon from "../../components/NavbarCommon";
@@ -10,6 +10,9 @@ import { API_BASE_URL } from "../../api"; // ✅ centralized import
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation(); // for redirecting to previous page
+  const from = location.state?.from?.pathname || null;
+
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,26 +24,24 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // ✅ Use the imported API_BASE_URL dynamically
-      const res = await axios.post(`${API_BASE_URL}/auth/login`, {
-        email,
-        password,
-      });
-
+      // Login request
+      const res = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
       const userData = res.data.user;
 
-      // ✅ Save user via context (persists to localStorage)
-      login(userData, "dummy_token"); // placeholder token until real JWT is added
+      // Save user via context (and localStorage)
+      login(userData, res.data.token); // use real JWT token if available
 
       toast.success("✅ Login successful!");
 
-      // ✅ Redirect based on user role
+      // Redirect after login
       setTimeout(() => {
-        if (userData.role === "admin") navigate("/admin");
-        else if (userData.role === "instructor") navigate("/instructor");
-        else if (userData.role === "trainee") navigate("/trainee");
-        else navigate("/unauthorized");
-      }, 1000);
+        if (from) navigate(from, { replace: true }); // go back to original page
+        else if (userData.role === "admin") navigate("/admin", { replace: true });
+        else if (userData.role === "instructor") navigate("/instructor", { replace: true });
+        else if (userData.role === "trainee") navigate("/trainee", { replace: true });
+        else navigate("/unauthorized", { replace: true });
+      }, 300);
+
     } catch (err) {
       console.error("Login error:", err);
       toast.error(err.response?.data?.error || "❌ Invalid credentials!");
