@@ -22,7 +22,7 @@ export default function Login() {
 
     try {
       // ✅ Use the imported API_BASE_URL dynamically
-      const res = await axios.post(`${API_BASE_URL}/auth/login`, {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         email,
         password,
       });
