@@ -1,3 +1,5 @@
+// App.jsx
+import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // 🔐 Auth pages
@@ -56,55 +58,40 @@ export default function App() {
         {/* ===================================================
            🧭 ADMIN ROUTES
         =================================================== */}
-        <Route
-          path="/admin/*"
-          element={
-            <ProtectedRoute roles={["admin"]}>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<AdminDashboard />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="contents" element={<ContentLibrary />} />
-          <Route path="reports" element={<AdminReports />} />
+        <Route element={<ProtectedRoute roles={["admin"]} />}>
+          <Route path="/admin/*" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="contents" element={<ContentLibrary />} />
+            <Route path="reports" element={<AdminReports />} />
+          </Route>
         </Route>
 
         {/* ===================================================
            🎓 INSTRUCTOR ROUTES
         =================================================== */}
-        <Route
-          path="/instructor/*"
-          element={
-            <ProtectedRoute roles={["instructor"]}>
-              <InstructorLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<InstructorDashboardHome />} />
-          <Route path="dashboard" element={<InstructorDashboardHome />} />
-          <Route path="content-library" element={<ContentLibraryInst />} />
-          <Route path="my-modules" element={<MyModulesInstructor />} />
-          <Route path="enroll-trainee" element={<InstructorTrainee />} />
-          <Route path="progress-summary" element={<InstructorSummary />} />
+        <Route element={<ProtectedRoute roles={["instructor"]} />}>
+          <Route path="/instructor/*" element={<InstructorLayout />}>
+            <Route index element={<InstructorDashboardHome />} />
+            <Route path="dashboard" element={<InstructorDashboardHome />} />
+            <Route path="content-library" element={<ContentLibraryInst />} />
+            <Route path="my-modules" element={<MyModulesInstructor />} />
+            <Route path="enroll-trainee" element={<InstructorTrainee />} />
+            <Route path="progress-summary" element={<InstructorSummary />} />
+          </Route>
         </Route>
 
         {/* ===================================================
            👨‍💻 TRAINEE ROUTES
         =================================================== */}
-        <Route
-          path="/trainee/*"
-          element={
-            <ProtectedRoute roles={["trainee"]}>
-              <TraineeLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<TraineeDashboardHome />} />
-          <Route path="dashboard" element={<TraineeDashboardHome />} />
-          <Route path="my-courses" element={<TraineeCourses />} />
-          <Route path="progress-summary" element={<TraineeSummary />} />
+        <Route element={<ProtectedRoute roles={["trainee"]} />}>
+          <Route path="/trainee/*" element={<TraineeLayout />}>
+            <Route index element={<TraineeDashboardHome />} />
+            <Route path="dashboard" element={<TraineeDashboardHome />} />
+            <Route path="my-courses" element={<TraineeCourses />} />
+            <Route path="progress-summary" element={<TraineeSummary />} />
+          </Route>
         </Route>
 
         {/* ===================================================
