@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+// src/context/AuthContext.jsx
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { API_BASE_URL } from "../api";
 
 const AuthContext = createContext();
@@ -14,9 +15,9 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [token, setToken] = useState(() => localStorage.getItem("auth_token") || null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!token); // loading only if token exists
 
-  // Persist to localStorage
+  // Sync user & token to localStorage
   useEffect(() => {
     if (user) localStorage.setItem("auth_user", JSON.stringify(user));
     else localStorage.removeItem("auth_user");
@@ -27,36 +28,44 @@ export const AuthProvider = ({ children }) => {
     else localStorage.removeItem("auth_token");
   }, [token]);
 
-  // Fetch user on reload if token exists
+  // Fetch user data on page load if token exists
   useEffect(() => {
-    if (!token) return;
-
     const fetchUser = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
       try {
+        setLoading(true);
         const res = await fetch(`${API_BASE_URL}/api/users/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!res.ok) throw new Error("Failed to fetch user");
+        if (!res.ok) {
+          throw new Error("Failed to fetch user");
+        }
 
         const data = await res.json();
         setUser(data.user);
       } catch (err) {
-        console.error("❌ Failed to fetch user:", err);
-        logout(); // Token invalid? Force logout
+        console.error("❌ Auth fetch error:", err);
+        setUser(null);
+        setToken(null);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUser();
   }, [token]);
 
-  // Login function
+  // Login & Logout
   const login = useCallback((userData, authToken) => {
     setUser(userData);
     setToken(authToken);
   }, []);
 
-  // Logout function
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
@@ -70,7 +79,6 @@ export const AuthProvider = ({ children }) => {
         user,
         token,
         loading,
-        setLoading,
         login,
         logout,
         isAuthenticated: !!token,
