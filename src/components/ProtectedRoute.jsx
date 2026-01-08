@@ -6,17 +6,17 @@ export default function ProtectedRoute({ roles }) {
   const { user, token, loading } = useAuth();
   const location = useLocation();
 
-  // If AuthContext is still loading (fetching user), show nothing or a spinner
-  if (loading) return null; // or <Spinner /> component
+  // 🔹 Wait until auth state is loaded
+  if (loading) return null; // or a spinner
 
-  // Not logged in → redirect to login
+  // 🔹 Not logged in → redirect to login
   if (!token) return <Navigate to="/login" state={{ from: location }} replace />;
 
-  // Logged in but role is not allowed → unauthorized page
+  // 🔹 Role check
   if (roles && (!user || !roles.includes(user.role))) {
     return <Navigate to="/unauthorized" replace />;
   }
 
-  // Authenticated and authorized → show child routes
+  // 🔹 Authenticated and authorized → show nested routes
   return <Outlet />;
 }
