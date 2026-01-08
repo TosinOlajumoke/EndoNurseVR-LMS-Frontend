@@ -1,6 +1,4 @@
-// src/context/AuthContext.jsx
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { API_BASE_URL } from "../api";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 
 const AuthContext = createContext();
 
@@ -14,74 +12,32 @@ export const AuthProvider = ({ children }) => {
     }
   });
 
-  const [token, setToken] = useState(() => localStorage.getItem("auth_token") || null);
-  const [loading, setLoading] = useState(!!token); // loading only if token exists
+  const [loading, setLoading] = useState(false);
 
-  // Sync user & token to localStorage
+  // Persist user to localStorage
   useEffect(() => {
     if (user) localStorage.setItem("auth_user", JSON.stringify(user));
     else localStorage.removeItem("auth_user");
   }, [user]);
 
-  useEffect(() => {
-    if (token) localStorage.setItem("auth_token", token);
-    else localStorage.removeItem("auth_token");
-  }, [token]);
-
-  // Fetch user data on page load if token exists
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const res = await fetch(`${API_BASE_URL}/api/users/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch user");
-        }
-
-        const data = await res.json();
-        setUser(data.user);
-      } catch (err) {
-        console.error("❌ Auth fetch error:", err);
-        setUser(null);
-        setToken(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [token]);
-
-  // Login & Logout
-  const login = useCallback((userData, authToken) => {
+  const login = useCallback((userData) => {
     setUser(userData);
-    setToken(authToken);
   }, []);
 
   const logout = useCallback(() => {
     setUser(null);
-    setToken(null);
     localStorage.removeItem("auth_user");
-    localStorage.removeItem("auth_token");
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
-        loading,
         login,
         logout,
-        isAuthenticated: !!token,
+        loading,
+        setLoading,
+        isAuthenticated: !!user,
         role: user?.role || null,
       }}
     >
