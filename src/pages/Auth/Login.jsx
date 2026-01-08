@@ -1,3 +1,4 @@
+// src/pages/Auth/Login.jsx
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -25,22 +26,21 @@ export default function Login() {
 
     try {
       const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
-      const { user: userData, token } = res.data;
 
-      // Save user & token
-      login(userData, token);
+      const userData = res.data.user;
+      const authToken = res.data.token;
+
+      login(userData, authToken); // update context
 
       toast.success("✅ Login successful!");
 
-      // Redirect AFTER state update
-      const role = userData.role;
-      setTimeout(() => {
-        if (from) navigate(from, { replace: true });
-        else if (role === "admin") navigate("/admin", { replace: true });
-        else if (role === "instructor") navigate("/instructor", { replace: true });
-        else if (role === "trainee") navigate("/trainee", { replace: true });
-        else navigate("/unauthorized", { replace: true });
-      }, 100); // small delay ensures state updated
+      // Redirect immediately
+      if (from) navigate(from, { replace: true });
+      else if (userData.role === "admin") navigate("/admin", { replace: true });
+      else if (userData.role === "instructor") navigate("/instructor", { replace: true });
+      else if (userData.role === "trainee") navigate("/trainee", { replace: true });
+      else navigate("/unauthorized", { replace: true });
+
     } catch (err) {
       console.error("Login error:", err);
       toast.error(err.response?.data?.error || "❌ Invalid credentials!");
@@ -60,6 +60,7 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleLogin}>
+            {/* Email */}
             <div className="mb-3">
               <label className="form-label fw-semibold">Email</label>
               <input
@@ -72,6 +73,7 @@ export default function Login() {
               />
             </div>
 
+            {/* Password */}
             <div className="mb-3">
               <label className="form-label fw-semibold">Password</label>
               <div className="input-group">
@@ -83,22 +85,37 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-                <button type="button" className="btn btn-outline-secondary" onClick={() => setShow((s) => !s)}>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShow((s) => !s)}
+                >
                   <i className={`bi ${show ? "bi-eye-slash" : "bi-eye"}`}></i>
                 </button>
               </div>
             </div>
 
+            {/* Forgot Password */}
             <div className="text-center mt-2">
-              <Link to="/forgot" className="auth-link">Forgot Password?</Link>
+              <Link to="/forgot" className="auth-link">
+                Forgot Password?
+              </Link>
             </div>
 
-            <button className="btn w-100 mt-3 auth-btn" type="submit" disabled={loading}>
+            {/* Submit */}
+            <button
+              className="btn w-100 mt-3 auth-btn"
+              type="submit"
+              disabled={loading}
+            >
               {loading ? "Logging in..." : "Login"}
             </button>
 
+            {/* Signup */}
             <div className="text-center mt-3">
-              <Link to="/signup" className="auth-link">Don’t have an account? Sign Up</Link>
+              <Link to="/signup" className="auth-link">
+                Don’t have an account? Sign Up
+              </Link>
             </div>
           </form>
         </div>
